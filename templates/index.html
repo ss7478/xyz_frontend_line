@@ -4,7 +4,7 @@
         <title>XYZBlades command center</title>
         <meta charset="UTF-8">
         <meta lang="en">
-        <h1>XYZBlades team drone webpage</h1>
+        <h1>XYZBlades command center</h1>
         <link rel="stylesheet" href="static/style.css">
     </head>
     <body>
@@ -25,22 +25,22 @@
     </body>
 
     <script>
-        
+
         function send_start()
         {
             fetch('/start_handle');
         }
-        
+
         function send_stop()
         {
             fetch('/stop_handle');
         }
-        
+
         function send_pause()
         {
             fetch('/pause_handle');
         }
-        
+
         function send_kill()
         {
             fetch('/kill_handle');
@@ -48,24 +48,27 @@
 
         const topics =
         {
-            raw: 'http://192.168.50.50:8080/stream?topic=/main_camera/image_raw',
-            colordebug: 'http://192.168.50.50:8080/stream?topic=/main_camera/color_debug',
-            maskdebug: 'http://192.168.50.50:8080/stream?topic=/main_camera/mask_debug',
-            arucodetect: 'http://192.168.50.50:8080/stream?topic=/aruco_detect/debug',
+            raw: ':8080/stream?topic=/main_camera/image_raw',
+            colordebug: ':8080/stream?topic=/color_debug',
+            maskdebug: ':8080/stream?topic=/mask_debug',
+            arucodetect: ':8080/stream?topic=/aruco_detect/debug',
         }
+
+        const ip_addr = window.location.hostname;
 
         function change_topic(topic)
         {
-            document.querySelector('.topic_debug').style.backgroundImage = `url('${topics[topic]}')`;
+            document.querySelector('.topic_debug').style.backgroundImage = `url('http://${ip_addr}${topics[topic]}')`;
+            console.log(ip_addr);
         }
-        
-        
+
+
         let marks = [];
         let coordslog = [];
-        
-        const xcount = 4;
-        const ycount = 4;
-        
+
+        const xcount = 10;
+        const ycount = 10;
+
         function fetchmarks()
         {
             const mapdiv = document.getElementsByClassName("map_square")[0];
@@ -74,35 +77,35 @@
             .then(response => response.json())
             .then(data => {
                     marks = data.marks;
-                    // console.log(marks);
                     mapdiv.innerHTML = '';
                     coordslog = [];
                     marks.forEach(mark => {
-                        const markElement = document.createElement('div');
-                        const x = mark[0] * (600 / xcount) + (600 / xcount - 30) / 2;
-                        const y = mark[1] * (600 / ycount) + (600 / ycount - 30) / 2;
-                        let form = '';
-                        if(mark[3] == 'square')
-                            form = 'mark_square';
-                        else if(mark[3] == 'circle')
-                            form = 'mark_circle';
-                        else
-                            form = 'mark_triangle';
-                        console.log(mark[3]);
-                        markElement.className = form;
-                        markElement.style.backgroundColor = mark[2];
-                        markElement.style.left = `${x}px`;
-                        markElement.style.bottom = `${y}px`;
-                        mapdiv.appendChild(markElement);
+                    const x1 = (230 + mark[0] * (1540 / (xcount - 1))) * 0.3;
+                    const y1 = (230 + mark[1] * (1540 / (ycount - 1))) * 0.3;
+                    const x2 = (230 + mark[2] * (1540 / (ycount - 1))) * 0.3;
+                    const y2 = (230 + mark[3] * (1540 / (ycount - 1))) * 0.3;
+                    const length = Math.hypot(x2 - x1, y2 - y1);
+                    const angle = -Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                    const thickness = 5;
+                    const line = document.createElement('div');
+                    line.className = 'line_class';
+                    line.style.position = 'absolute';
+                    line.style.left = `${x1}px`;
+                    line.style.bottom = `${y1}px`;
+                    line.style.width = `${length}px`;
+                    line.style.height = `${thickness}px`;
+                    line.style.transformOrigin = '0 0';
+                    line.style.transform = `rotate(${angle}deg)`;
+                    mapdiv.appendChild(line);
 
                         const coordsElement = document.createElement('div');
                         coordsElement.className = 'coords';
                         coordsElement.innerText = `${mark[0]};${mark[1]}`;
-                        coordsElement.style.left = `${x - 4}px`;
-                        coordsElement.style.bottom = `${y + 31}px`;
+                        coordsElement.style.left = `${x1 - 4}px`;
+                        coordsElement.style.bottom = `${y1 + 31}px`;
                         mapdiv.appendChild(coordsElement);
 
-                        switch(mark[2])
+                        /*switch(mark[2])
                         {
                             case 'red':
                                 color = 'красный';
@@ -120,14 +123,15 @@
                                 color = 'неизвестный';
                                 break;
                         }
-                        coordslog.push(`X: ${mark[0]}; Y: ${mark[1]}, цвет: ${color}`);
+                        coordslog.push(`X: ${mark[0]}; Y: ${mark[1]}, цвет: ${color}`);*/
                     });
                 })
                 .catch(error => console.error('Ошибка:', error));
-            console.log(coordslog)
+            console.log(marks)
             coordslogdiv.innerText = coordslog.join('\n');
         }
-        
+
         setInterval(fetchmarks, 500);
+        document.querySelector('.map_square').style.backgroundImage = `url('http://${ip_addr}:8080/stream?topic=/aruco_map/image')`;
     </script>
 </html>
