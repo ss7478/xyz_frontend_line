@@ -17,26 +17,10 @@ def main(button_flags, marks):
             pass
         for i in range(len(marks)):
             marks.pop()
+        marks.append([0, 0, 1, 1])
+        marks.append([1, 1, 1, 2])
+        marks.append([1, 2, 3, 5])
         while button_flags["start"]:
-            a = randint(0, 4)
-            color = ''
-            if a == 1:
-                color = 'red'
-            elif a == 2:
-                color = 'green'
-            elif a == 3:
-                color = 'blue'
-            else:
-                color = 'yellow'
-            a = randint(0, 3)
-            if a == 1:
-                form = 'square'
-            elif a == 2:
-                form = 'triangle'
-            elif a == 3:
-                form = 'circle'
-
-            marks.append([round(randint(0, 3), 1), round(randint(0, 3), 1), color, form])
             time.sleep(1)
 
 
